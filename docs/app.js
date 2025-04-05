@@ -28,7 +28,7 @@ function preprocessImage(imgElement) {
 }
 
 // 4. 预测函数
-async function predict(imageElement) {
+export async function predict(imageElement) {
     if (!model) {
         console.error('模型未加载！');
         return;
