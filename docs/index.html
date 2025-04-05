@@ -1,1 +1,40 @@
+<input type="file" id="upload" accept="image/*">
+<img id="preview" style="display: none; max-width: 300px;">
+<div id="result"></div>
 
+<script type="module">
+    // 导入上面的模型代码
+    import { predict } from './app.js';
+
+    const uploadBtn = document.getElementById('upload');
+    const previewImg = document.getElementById('preview');
+    const resultDiv = document.getElementById('result');
+
+    uploadBtn.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            previewImg.src = e.target.result;
+            previewImg.style.display = 'block';
+            
+            // 等待图片加载
+            await new Promise(resolve => previewImg.onload = resolve);
+            
+            // 执行预测
+            const predictions = await predict(previewImg);
+            
+            // 显示结果（假设是4分类）
+            const classNames = ['可回收', '有害', '厨余', '其他'];
+            const maxProb = Math.max(...predictions);
+            const predictedClass = classNames[predictions.indexOf(maxProb)];
+            
+            resultDiv.innerHTML = `
+                <h3>识别结果：${predictedClass}</h3>
+                <p>置信度：${(maxProb * 100).toFixed(1)}%</p>
+            `;
+        };
+        reader.readAsDataURL(file);
+    });
+</script>
