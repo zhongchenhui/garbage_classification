@@ -84,16 +84,6 @@
         });
     </script>
 
-  // 加载TensorFlow.js模型
-async function loadModel() {
-    const model = await tf.loadLayersModel('models/tfjs-model/model.json');
-    console.log('模型加载成功');
-    return model;
-}
-
-// 调用示例
-loadModel().then(model => {
-    window.model = model;
-});
+  
 </body>
 </html>
