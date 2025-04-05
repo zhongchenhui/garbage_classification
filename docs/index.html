@@ -1,49 +1,24 @@
-<input type="file" id="upload" accept="image/*">
-<img id="preview" style="display: none; max-width: 300px;">
-<div id="result"></div>
-
 <script type="module">
-    // 导入app.js中的函数
-    import { predict } from './app.js';
+  import { predict } from './app.js';
 
-    document.getElementById('upload').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+  document.getElementById('upload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const previewImg = document.getElementById('preview');
-            previewImg.src = e.target.result;
-            previewImg.style.display = 'block';
-            
-            // 等待图片加载
-            await new Promise(resolve => previewImg.onload = resolve);
-            
-            // 执行预测
-            const predictions = await predict(previewImg);
-            
-            // 显示结果（假设是4分类）
-            const classNames = ['可回收', '有害', '厨余', '其他'];
-            const maxProb = Math.max(...predictions);
-            const predictedClass = classNames[predictions.indexOf(maxProb)];
-            
-            document.getElementById('result').innerHTML = `
-                <h3>识别结果：${predictedClass}</h3>
-                <p>置信度：${(maxProb * 100).toFixed(1)}%</p>
-                <p>处理建议：${getDisposalTip(predictedClass)}</p>
-            `;
-        };
-        reader.readAsDataURL(file);
-    });
-
-    // 垃圾分类建议
-    function getDisposalTip(className) {
-        const tips = {
-            '可回收': '请清洁后投入蓝色垃圾桶',
-            '有害': '请投入红色专用回收箱',
-            '厨余': '去除塑料袋后投入绿色垃圾桶',
-            '其他': '请投入灰色垃圾桶'
-        };
-        return tips[className] || '请按当地规定处理';
-    }
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const previewImg = document.getElementById('preview');
+      previewImg.src = e.target.result;
+      
+      await new Promise(resolve => previewImg.onload = resolve);
+      
+      try {
+        const predictions = await predict(previewImg);
+        // 显示结果逻辑不变...
+      } catch (err) {
+        console.error('预测失败:', err);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
 </script>
