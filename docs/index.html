@@ -3,19 +3,16 @@
 <div id="result"></div>
 
 <script type="module">
-    // 导入上面的模型代码
+    // 导入app.js中的函数
     import { predict } from './app.js';
 
-    const uploadBtn = document.getElementById('upload');
-    const previewImg = document.getElementById('preview');
-    const resultDiv = document.getElementById('result');
-
-    uploadBtn.addEventListener('change', async (e) => {
+    document.getElementById('upload').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = async (e) => {
+            const previewImg = document.getElementById('preview');
             previewImg.src = e.target.result;
             previewImg.style.display = 'block';
             
@@ -30,11 +27,23 @@
             const maxProb = Math.max(...predictions);
             const predictedClass = classNames[predictions.indexOf(maxProb)];
             
-            resultDiv.innerHTML = `
+            document.getElementById('result').innerHTML = `
                 <h3>识别结果：${predictedClass}</h3>
                 <p>置信度：${(maxProb * 100).toFixed(1)}%</p>
+                <p>处理建议：${getDisposalTip(predictedClass)}</p>
             `;
         };
         reader.readAsDataURL(file);
     });
+
+    // 垃圾分类建议
+    function getDisposalTip(className) {
+        const tips = {
+            '可回收': '请清洁后投入蓝色垃圾桶',
+            '有害': '请投入红色专用回收箱',
+            '厨余': '去除塑料袋后投入绿色垃圾桶',
+            '其他': '请投入灰色垃圾桶'
+        };
+        return tips[className] || '请按当地规定处理';
+    }
 </script>
