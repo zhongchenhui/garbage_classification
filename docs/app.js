@@ -18,7 +18,7 @@ function hideLoading() {
 
 // 显示错误
 function showError(text) {
-  resultDiv.innerHTML = `<div class="error">❌ ${text}</div>`;
+  resultDiv.innerHTML = `<div class="error">X ${text}</div>`;
 }
 
 // 加载TensorFlow.js模型
