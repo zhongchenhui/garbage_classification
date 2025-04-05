@@ -7,7 +7,7 @@ let model;
 
 // 显示加载状态
 function showLoading(text) {
-  resultDiv.innerHTML = `<div class="loading">⏳ ${text}</div>`;
+  resultDiv.innerHTML = `<div class="loading"> ${text}</div>`;
 }
 
 // 隐藏加载状态
