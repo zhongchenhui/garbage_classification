@@ -1,0 +1,67 @@
+/* 基础样式 */
+body {
+  font-family: 'Microsoft YaHei', sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f0f4f8;
+}
+
+/* 上传区域 */
+.upload-box {
+  border: 2px dashed #4CAF50;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  margin: 20px 0;
+  background: white;
+  transition: border-color 0.3s;
+}
+
+.upload-box:hover {
+  border-color: #45a049;
+}
+
+/* 预览图片 */
+#preview {
+  max-width: 300px;
+  margin: 20px auto;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 结果展示 */
+#result {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#result h3 {
+  color: #2e8b57;
+  margin: 0 0 10px;
+}
+
+.tips {
+  margin-top: 15px;
+  padding: 12px;
+  background: #e8f5e9;
+  border-left: 4px solid #4CAF50;
+  border-radius: 4px;
+}
+
+.loading {
+  color: #666;
+  text-align: center;
+  padding: 15px;
+}
+
+.error {
+  color: #dc3545;
+  padding: 15px;
+  background: #ffeef0;
+  border-radius: 4px;
+}
