@@ -1,24 +1,101 @@
-<script type="module">
-  import { predict } from './app.js';
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Garbage Classification</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+</head>
+<body>
+    <input type="file" id="imageLoader" accept="image/*">
+    <img id="preview" style="max-width: 300px; max-height: 300px;">
+    <p>Predictions: <span id="result"></span></p>
 
-  document.getElementById('upload').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    <script type="module">
+      (async () => {
+        try {
+          // 加载类别标签
+          const classIndices = await fetch('/class_indices.json')
+            .then(response => response.json())
+            .then(data => {
+              const formatted = {};
+              for (const key in data) {
+                formatted[key.toString()] = data[key];
+              }
+              return formatted;
+            });
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const previewImg = document.getElementById('preview');
-      previewImg.src = e.target.result;
-      
-      await new Promise(resolve => previewImg.onload = resolve);
-      
-      try {
-        const predictions = await predict(previewImg);
-        // 显示结果逻辑不变...
-      } catch (err) {
-        console.error('预测失败:', err);
+          // 加载模型
+          const model = await tf.loadGraphModel('/js/model/model.json');
+          console.log("Model input shape:", model.inputs[0].shape);
+          console.log("Model output shape:", model.outputs[0].shape);
+
+          // 绑定文件选择事件
+          document.getElementById('imageLoader').addEventListener('change', async (event) => {
+            const reader = new FileReader();
+            reader.onload = async () => {
+              const img = document.getElementById('preview');
+              img.src = reader.result;
+              await img.decode();
+              await predict(img, classIndices, model);
+            };
+            reader.readAsDataURL(event.target.files[0]);
+          });
+        } catch (error) {
+          console.error("初始化失败:", error);
+        }
+      })();
+
+      // 预处理函数（关键修改）
+      function preprocessImage(imageElement) {
+        return tf.tidy(() => {
+          const tensor = tf.browser.fromPixels(imageElement)
+            .resizeBilinear([224, 224])    // 使用双线性插值
+            .toFloat()
+            .div(255.0)                   // 标准化到 [0,1]
+            .sub(0.5)                     // MobileNetV2标准预处理
+            .mul(2.0)                      // [-1, 1] 范围
+            .expandDims(0);
+          
+          // 验证预处理数值范围
+          const [minVal, maxVal] = [tf.min(tensor).dataSync()[0], tf.max(tensor).dataSync()[0]];
+          console.log(`预处理范围: [${minVal.toFixed(2)}, ${maxVal.toFixed(2)}]`);
+          
+          return tensor;
+        });
       }
-    };
-    reader.readAsDataURL(file);
-  });
-</script>
+
+      // 预测函数（改进版）
+      async function predict(imageElement, classIndices, model) {
+        try {
+          const inputTensor = preprocessImage(imageElement);
+          const predictions = await model.predict(inputTensor);
+          const scores = Array.from(predictions.dataSync());
+          inputTensor.dispose();
+
+          // 获取前3个预测结果
+          const topPredictions = scores
+            .map((score, index) => ({ 
+              label: classIndices[index] || "未知类别", 
+              confidence: (score * 100).toFixed(1),
+              index 
+            }))
+            .sort((a, b) => b.confidence - a.confidence)
+            .slice(0, 3);
+
+          // 显示结果
+          const resultHTML = topPredictions
+            .map(p => `${p.label}: ${p.confidence}%`)
+            .join("<br>");
+            
+          document.getElementById('result').innerHTML = resultHTML;
+          
+          // 调试输出
+          console.log("原始预测值:", scores);
+          console.log("处理后的预测结果:", topPredictions);
+        } catch (error) {
+          console.error("预测失败:", error);
+          document.getElementById('result').innerText = "预测出错，请检查控制台";
+        }
+      }
+    </script>
+</body>
+</html>
